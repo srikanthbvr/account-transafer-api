@@ -30,6 +30,7 @@ namespace FHLB.Api.Controllers
     }
 
     [HttpGet("{id}")]
+    [ActionName(nameof(GetAccountAsync))]
     public async Task<ActionResult<AccountDto>> GetAccountAsync(int id)
     {
       var account = await accountsRepository.GetAccountAsync(id);
@@ -54,7 +55,7 @@ namespace FHLB.Api.Controllers
 
       await accountsRepository.CreateAccountAsync(account);
 
-      return CreatedAtAction(nameof(GetAccountAsync), new { id = account.Id });
+      return CreatedAtAction(nameof(GetAccountAsync), new { id = account.Id }, account.AsDto());
     }
 
     [HttpPut("{id}")]
@@ -90,71 +91,6 @@ namespace FHLB.Api.Controllers
       await accountsRepository.DeleteAccountAsync(id);
 
       return NoContent();
-    }
-
-    [HttpGet]
-    [Route("{id}/transactions")]
-    public async Task<IEnumerable<TransactionDto>> GetTransactionsAsync(int id)
-    {
-      var transactions = (await transactionsRepository.GetTransactionsAsync())
-                          .Where(transaction => transaction.FromAccountId == id || transaction.ToAccountId == id)
-                          .Select(transaction => transaction.AsDto());
-
-      return transactions;
-    }
-
-    [HttpGet]
-    [Route("transactions/{id}")]
-    public async Task<ActionResult<TransactionDto>> GetTransactionAsync(int id)
-    {
-      var transaction = await transactionsRepository.GetTransactionAsync(id);
-
-      if (transaction is null)
-      {
-        return NotFound();
-      }
-
-      return transaction.AsDto();
-    }
-
-    [HttpPost]
-    [Route("transactions")]
-    public async Task<ActionResult<TransactionDto>> CreateTransactionAsync(CreateTransactionDto transactionDto)
-    {
-      var fromAccount = await accountsRepository.GetAccountAsync(transactionDto.FromAccountId);
-      var toAccount = await accountsRepository.GetAccountAsync(transactionDto.ToAccountId);
-
-      if (fromAccount is null || toAccount is null)
-      {
-        return NotFound();
-      }
-
-      bool insufficientFunds = fromAccount.AccountBalance < transactionDto.Amount;
-
-      Transaction transaction = new()
-      {
-        Id = transactionsRepository.GetTransactionsAsync().Result.Count() + 1,
-        FromAccountId = transactionDto.FromAccountId,
-        ToAccountId = transactionDto.ToAccountId,
-        Amount = transactionDto.Amount,
-        Date = DateTime.UtcNow,
-        Status = insufficientFunds ? "Failed" : "Success"
-      };
-
-      await transactionsRepository.CreateTransactionAsync(transaction);
-
-      if (insufficientFunds)
-      {
-        return BadRequest("Insufficient funds");
-      }
-
-      fromAccount.Withdraw(transactionDto.Amount);
-      toAccount.Deposit(transactionDto.Amount);
-
-      await accountsRepository.UpdateAccountAsync(fromAccount);
-      await accountsRepository.UpdateAccountAsync(toAccount);
-
-      return CreatedAtAction(nameof(GetTransactionAsync), new { id = transaction.Id }, transaction.AsDto());
     }
   }
 }
