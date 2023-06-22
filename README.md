@@ -9,28 +9,19 @@
 5. The final result should be executable as a standalone program (should not require a pre-installed container/server).
 6. Demonstrate with tests that the API works as expected.
 
-## Assumptions
+## Sope
 
-1. The API will be used by a single client at a time.
-2. The API will be used by a single thread at a time.
+1. Develop APIs
+2. Develop Unit Tests
 
 ## Design
 
 - C#
 - ASP.NET Core
-- SDK ??
+- SDK 7.0
 - Unit tests - xUnit
 
-### Commands
 
-```cmd
-dotnet new webapi -n FHLB.Api
-dotnet new xunit -n FHLB.Api.UnitTests
-dotnet add reference ../FHLB.Api/FHLB.Api.csproj
-dotnet add package moq
-dotnet add package FluentAssertions
-dotnet test
-```
 
 ### Entities
 
@@ -50,9 +41,25 @@ dotnet test
 
 ## Development
 
+Use Visual Studio Code to develop the API.
+Develop two controllers handling actions for accounts and transactions.
+
 ## Unit Tests
 
-## TODO
-
+Create Unit test cases covering all the scenarios.
+Uses
+- Fluent Assertions
+- Moq
+- xUnit
 ## Notes
 
+### Commands
+
+```cmd
+dotnet new webapi -n FHLB.Api
+dotnet new xunit -n FHLB.Api.UnitTests
+dotnet add reference ../FHLB.Api/FHLB.Api.csproj
+dotnet add package moq
+dotnet add package FluentAssertions
+dotnet test
+```

@@ -17,22 +17,6 @@ public class AccountsControllerTests
 
     [Fact]
     // public void UnitOfWork_StateUnderTest_ExpectedBehavior()
-    public async Task GetAccountAsync_WithUnexistingAccount_ReturnsNotFound()
-    {
-        // Arrange
-        AccountsRepositoryStub.Setup(repo => repo.GetAccountAsync(It.IsAny<int>()))
-            .ReturnsAsync((Account)null);
-
-        var controller = new AccountsController(AccountsRepositoryStub.Object, TransactionsRepositoryStub.Object);
-
-        // Act
-        var result = await controller.GetAccountAsync(1);
-
-        // Assert
-        Assert.IsType<NotFoundResult>(result.Result);
-    }
-
-    [Fact]
     public async Task GetAccountAsync_WithExistingAccount_ReturnsExpectedAccount()
     {
         // Arrange
@@ -75,5 +59,21 @@ public class AccountsControllerTests
             Assert.Equal(expectedAccounts.ElementAt(i).AccountName, actualAccounts.ElementAt(i).AccountName);
             Assert.Equal(expectedAccounts.ElementAt(i).AccountBalance, actualAccounts.ElementAt(i).AccountBalance);
         }
+    }
+
+    [Fact]
+    public async Task GetAccountAsync_WithUnexistingAccount_ReturnsNotFound()
+    {
+        // Arrange
+        AccountsRepositoryStub.Setup(repo => repo.GetAccountAsync(It.IsAny<int>()))
+            .ReturnsAsync((Account)null);
+
+        var controller = new AccountsController(AccountsRepositoryStub.Object, TransactionsRepositoryStub.Object);
+
+        // Act
+        var result = await controller.GetAccountAsync(1);
+
+        // Assert
+        Assert.IsType<NotFoundResult>(result.Result);
     }
 }

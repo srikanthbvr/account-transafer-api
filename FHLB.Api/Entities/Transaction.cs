@@ -12,5 +12,7 @@ public record Transaction
 
   public string? Status { get; set; }
 
+  public string? ErrorMessage { get; set; }
+
   public DateTime Date { get; init; }
 }

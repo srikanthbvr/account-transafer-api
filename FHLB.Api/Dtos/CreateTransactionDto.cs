@@ -9,6 +9,6 @@ public record CreateTransactionDto
     [Required]
     public int ToAccountId { get; init; }
     [Required]
-    [Range(1, int.MaxValue)]
+    [Range(1, 1000)]
     public int Amount { get; init; }
 }

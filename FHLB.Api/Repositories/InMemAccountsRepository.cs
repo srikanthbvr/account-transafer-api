@@ -9,9 +9,9 @@ public class InMemAccountsRepository : IAccountsRepository
 
   public readonly List<Account> accounts = new()
   {
-    new Account { Id = 1, AccountName = "Robin", AccountBalance = 1000 },
-    new Account { Id = 2, AccountName = "Micheal", AccountBalance = 2000 },
-    new Account { Id = 3, AccountName = "Mary", AccountBalance = 3000 },
+    new Account { Id = 1, AccountName = "Robin", AccountBalance = 1000, AccountType = "Checking" },
+    new Account { Id = 2, AccountName = "Micheal", AccountBalance = 2000, AccountType = "Savings" },
+    new Account { Id = 3, AccountName = "Mary", AccountBalance = 3000, AccountType = "Checking" },
   };
 
   public async Task<IEnumerable<Account>> GetAccountsAsync()

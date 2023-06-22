@@ -53,7 +53,9 @@ namespace FHLB.Api.Controllers
         return NotFound();
       }
 
-      bool insufficientFunds = fromAccount.AccountBalance < transactionDto.Amount;
+      int transactionFee = fromAccount.AccountType == "Savings" ? 5 : 0;
+
+      bool insufficientFunds = fromAccount.AccountBalance < (transactionDto.Amount + transactionFee);
 
       Transaction transaction = new()
       {
@@ -62,7 +64,8 @@ namespace FHLB.Api.Controllers
         ToAccountId = transactionDto.ToAccountId,
         Amount = transactionDto.Amount,
         Date = DateTime.UtcNow,
-        Status = insufficientFunds ? "Failed" : "Success"
+        Status = insufficientFunds ? "Failed" : "Success",
+        ErrorMessage = insufficientFunds ? "Insufficient funds" : null,
       };
 
       await transactionsRepository.CreateTransactionAsync(transaction);
@@ -74,6 +77,23 @@ namespace FHLB.Api.Controllers
 
       fromAccount.Withdraw(transactionDto.Amount);
       toAccount.Deposit(transactionDto.Amount);
+
+      if (transactionFee > 0)
+      {
+        Transaction feeTransaction = new()
+        {
+          Id = transactionsRepository.GetTransactionsAsync().Result.Count() + 1,
+          FromAccountId = transactionDto.FromAccountId,
+          ToAccountId = 999999,
+          Amount = transactionFee,
+          Date = DateTime.UtcNow,
+          Status = insufficientFunds ? "Failed" : "Success",
+          ErrorMessage = insufficientFunds ? "Insufficient funds" : null,
+        };
+
+        await transactionsRepository.CreateTransactionAsync(feeTransaction);
+        fromAccount.Withdraw(transactionFee);
+      }
 
       await accountsRepository.UpdateAccountAsync(fromAccount);
       await accountsRepository.UpdateAccountAsync(toAccount);

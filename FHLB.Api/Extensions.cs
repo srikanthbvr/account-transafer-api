@@ -11,7 +11,8 @@ public static class Extensions
         {
             Id = account.Id,
             AccountName = account.AccountName,
-            AccountBalance = account.AccountBalance
+            AccountBalance = account.AccountBalance,
+            AccountType = account.AccountType
         };
     }
 
@@ -24,6 +25,7 @@ public static class Extensions
             ToAccountId = transaction.ToAccountId,
             Amount = transaction.Amount,
             Status = transaction.Status,
+            ErrorMessage = transaction.ErrorMessage,
             Date = transaction.Date
         };
     }
