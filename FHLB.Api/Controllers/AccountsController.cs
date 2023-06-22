@@ -1,4 +1,5 @@
-﻿using FHLB.Api.Dtos;
+﻿using System.Threading.Tasks;
+using FHLB.Api.Dtos;
 using FHLB.Api.Entities;
 using FHLB.Api.Repositories;
 using Microsoft.AspNetCore.Mvc;
@@ -19,45 +20,47 @@ namespace FHLB.Api.Controllers
     }
 
     [HttpGet]
-    public ActionResult<IEnumerable<AccountDto>> GetAccounts()
+    //GetAccountsAsync
+    public async Task<IEnumerable<AccountDto>> GetAccountsAsync()
     {
-      var accounts = accountsRepository.GetAccounts().Select(account => account.AsDto());
+      var accounts = (await accountsRepository.GetAccountsAsync())
+                      .Select(account => account.AsDto());
 
-      return Ok(accounts);
+      return accounts;
     }
 
     [HttpGet("{id}")]
-    public ActionResult<AccountDto?> GetAccount(int id)
+    public async Task<ActionResult<AccountDto>> GetAccountAsync(int id)
     {
-      var account = accountsRepository.GetAccount(id);
+      var account = await accountsRepository.GetAccountAsync(id);
 
       if (account is null)
       {
         return NotFound();
       }
 
-      return Ok(account.AsDto());
+      return account.AsDto();
     }
 
     [HttpPost]
-    public ActionResult<AccountDto> CreateAccount(CreateAccountDto accountDto)
+    public async Task<ActionResult<AccountDto>> CreateAccountAsync(CreateAccountDto accountDto)
     {
       Account account = new()
       {
-        Id = accountsRepository.GetAccounts().Count() + 1,
+        Id = accountsRepository.GetAccountsAsync().Result.Count() + 1,
         AccountName = accountDto.AccountName,
         AccountBalance = 0
       };
 
-      accountsRepository.CreateAccount(account);
+      await accountsRepository.CreateAccountAsync(account);
 
-      return CreatedAtAction(nameof(GetAccount), new { id = account.Id }, account.AsDto());
+      return CreatedAtAction(nameof(GetAccountAsync), new { id = account.Id });
     }
 
     [HttpPut("{id}")]
-    public ActionResult UpdateAccount(int id, CreateAccountDto accountDto)
+    public async Task<ActionResult> UpdateAccountAsync(int id, CreateAccountDto accountDto)
     {
-      var existingAccount = accountsRepository.GetAccount(id);
+      var existingAccount = await accountsRepository.GetAccountAsync(id);
 
       if (existingAccount is null)
       {
@@ -69,66 +72,57 @@ namespace FHLB.Api.Controllers
         AccountName = accountDto.AccountName
       };
 
-      accountsRepository.UpdateAccount(updatedAccount);
+      await accountsRepository.UpdateAccountAsync(updatedAccount);
 
       return NoContent();
     }
 
     [HttpDelete("{id}")]
-    public ActionResult DeleteAccount(int id)
+    public async Task<ActionResult> DeleteAccountAsync(int id)
     {
-      var existingAccount = accountsRepository.GetAccount(id);
+      var existingAccount = await accountsRepository.GetAccountAsync(id);
 
       if (existingAccount is null)
       {
         return NotFound();
       }
 
-      accountsRepository.DeleteAccount(id);
+      await accountsRepository.DeleteAccountAsync(id);
 
       return NoContent();
     }
 
     [HttpGet]
     [Route("{id}/transactions")]
-    public ActionResult<IEnumerable<TransactionDto>> GetTransactions(int id)
+    public async Task<IEnumerable<TransactionDto>> GetTransactionsAsync(int id)
     {
-      var account = accountsRepository.GetAccount(id);
+      var transactions = (await transactionsRepository.GetTransactionsAsync())
+                          .Where(transaction => transaction.FromAccountId == id || transaction.ToAccountId == id)
+                          .Select(transaction => transaction.AsDto());
 
-      if (account is null)
-      {
-        return NotFound();
-      }
-
-      IEnumerable<TransactionDto> debitTransactions = transactionsRepository.GetDebitTransactions(id).Select(transaction => transaction.AsDto());
-      debitTransactions = debitTransactions.Select(transaction => transaction with { TransactionType = "Debit" });
-
-      IEnumerable<TransactionDto> creditTransactions = transactionsRepository.GetCreditTransactions(id).Select(transaction => transaction.AsDto());
-      creditTransactions = creditTransactions.Select(transaction => transaction with { TransactionType = "Credit" });
-
-      return Ok(debitTransactions.Concat(creditTransactions));
+      return transactions;
     }
 
     [HttpGet]
     [Route("transactions/{id}")]
-    public ActionResult<TransactionDto?> GetTransaction(int id)
+    public async Task<ActionResult<TransactionDto>> GetTransactionAsync(int id)
     {
-      var transaction = transactionsRepository.GetTransaction(id);
+      var transaction = await transactionsRepository.GetTransactionAsync(id);
 
       if (transaction is null)
       {
         return NotFound();
       }
 
-      return Ok(transaction.AsDto());
+      return transaction.AsDto();
     }
 
     [HttpPost]
     [Route("transactions")]
-    public ActionResult<TransactionDto> CreateTransaction(CreateTransactionDto transactionDto)
+    public async Task<ActionResult<TransactionDto>> CreateTransactionAsync(CreateTransactionDto transactionDto)
     {
-      var fromAccount = accountsRepository.GetAccount(transactionDto.FromAccountId);
-      var toAccount = accountsRepository.GetAccount(transactionDto.ToAccountId);
+      var fromAccount = await accountsRepository.GetAccountAsync(transactionDto.FromAccountId);
+      var toAccount = await accountsRepository.GetAccountAsync(transactionDto.ToAccountId);
 
       if (fromAccount is null || toAccount is null)
       {
@@ -139,29 +133,28 @@ namespace FHLB.Api.Controllers
 
       Transaction transaction = new()
       {
-        Id = transactionsRepository.GetTransactions().Count() + 1,
+        Id = transactionsRepository.GetTransactionsAsync().Result.Count() + 1,
         FromAccountId = transactionDto.FromAccountId,
         ToAccountId = transactionDto.ToAccountId,
         Amount = transactionDto.Amount,
         Date = DateTime.UtcNow,
-        Status = (insufficientFunds ? "Failed" : "Success")
+        Status = insufficientFunds ? "Failed" : "Success"
       };
 
-      transactionsRepository.CreateTransaction(transaction);
+      await transactionsRepository.CreateTransactionAsync(transaction);
 
       if (insufficientFunds)
       {
-        return BadRequest(new { message = "Insufficient funds" });
+        return BadRequest("Insufficient funds");
       }
 
       fromAccount.Withdraw(transactionDto.Amount);
       toAccount.Deposit(transactionDto.Amount);
 
-      accountsRepository.UpdateAccount(fromAccount);
-      accountsRepository.UpdateAccount(toAccount);
+      await accountsRepository.UpdateAccountAsync(fromAccount);
+      await accountsRepository.UpdateAccountAsync(toAccount);
 
-      return CreatedAtAction(nameof(GetTransaction), new { id = transaction.Id }, transaction.AsDto());
+      return CreatedAtAction(nameof(GetTransactionAsync), new { id = transaction.Id }, transaction.AsDto());
     }
-
   }
 }

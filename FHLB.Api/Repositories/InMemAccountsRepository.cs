@@ -1,4 +1,6 @@
-﻿using FHLB.Api.Entities;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using FHLB.Api.Entities;
 
 namespace FHLB.Api.Repositories;
 
@@ -12,30 +14,34 @@ public class InMemAccountsRepository : IAccountsRepository
     new Account { Id = 3, AccountName = "Mary", AccountBalance = 3000 },
   };
 
-  public Account GetAccount(int id)
+  public async Task<IEnumerable<Account>> GetAccountsAsync()
   {
-    return accounts.Find(existingItem => existingItem.Id == id);
+    return await Task.FromResult(accounts);
   }
 
-  public IEnumerable<Account> GetAccounts()
+  public async Task<Account?> GetAccountAsync(int id)
   {
-    return accounts;
+    var account = accounts.Where(_ => _.Id == id).SingleOrDefault();
+    return await Task.FromResult(account);
   }
 
-  public void CreateAccount(Account account)
+  public async Task CreateAccountAsync(Account account)
   {
     accounts.Add(account);
+    await Task.CompletedTask;
   }
 
-  public void UpdateAccount(Account account)
+  public async Task UpdateAccountAsync(Account account)
   {
-    var index = accounts.FindIndex(existingItem => existingItem.Id == account.Id);
+    var index = accounts.FindIndex(_ => _.Id == account.Id);
     accounts[index] = account;
+    await Task.CompletedTask;
   }
 
-  public void DeleteAccount(int id)
+  public async Task DeleteAccountAsync(int id)
   {
     var index = accounts.FindIndex(existingItem => existingItem.Id == id);
     accounts.RemoveAt(index);
+    await Task.CompletedTask;
   }
 }

@@ -1,16 +1,17 @@
-﻿using FHLB.Api.Entities;
+﻿using System.Threading.Tasks;
+using FHLB.Api.Entities;
 
 namespace FHLB.Api.Repositories;
 
 public interface IAccountsRepository
 {
-    IEnumerable<Account> GetAccounts();
+    Task<IEnumerable<Account>> GetAccountsAsync();
 
-    Account GetAccount(int id);
+    Task<Account?> GetAccountAsync(int id);
 
-    void CreateAccount(Account account);
+    Task CreateAccountAsync(Account account);
 
-    void UpdateAccount(Account account);
+    Task UpdateAccountAsync(Account account);
 
-    void DeleteAccount(int id);
+    Task DeleteAccountAsync(int id);
 }

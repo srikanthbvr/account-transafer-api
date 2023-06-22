@@ -1,13 +1,14 @@
-﻿namespace FHLB.Api.Entities;
+﻿using System.Threading.Tasks;
+namespace FHLB.Api.Entities;
 
 public interface ITransactionsRepository
 {
-    Transaction CreateTransaction(Transaction transaction);
+    Task<Transaction> CreateTransactionAsync(Transaction transaction);
 
-    IEnumerable<Transaction> GetDebitTransactions(int id);
+    Task<IEnumerable<Transaction>> GetDebitTransactions(int id);
 
-    IEnumerable<Transaction> GetCreditTransactions(int id);
+    Task<IEnumerable<Transaction>> GetCreditTransactions(int id);
 
-    Transaction GetTransaction(int id);
-    IEnumerable<Transaction> GetTransactions();
+    Task<Transaction?> GetTransactionAsync(int id);
+    Task<IEnumerable<Transaction>> GetTransactionsAsync();
 }
