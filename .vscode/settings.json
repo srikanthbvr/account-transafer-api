@@ -1,0 +1,5 @@
+{
+  "dotnet.defaultSolution": "FHLB.sln",
+  "dotnet-test-explorer.testProjectPath": "**/*Tests.csproj",
+  "dotnet.server.useOmnisharp": true
+}

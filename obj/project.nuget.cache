@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "lmbv38yQ1CSmYc7c24IvnGwTn1rBJInNRK/HGP16RhMSWtK9VrjyOyj2Z9AUIZeOvwR0gHE+X5dv3k0HwZWYFw==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Baggu\\Documents\\github\\FHLB\\build.proj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Baggu\\.nuget\\packages\\microsoft.netframework.referenceassemblies\\1.0.3\\microsoft.netframework.referenceassemblies.1.0.3.nupkg.sha512",
+    "C:\\Users\\Baggu\\.nuget\\packages\\microsoft.netframework.referenceassemblies.net45\\1.0.3\\microsoft.netframework.referenceassemblies.net45.1.0.3.nupkg.sha512"
+  ],
+  "logs": []
+}
